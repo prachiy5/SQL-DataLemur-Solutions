@@ -1,0 +1,58 @@
+### Problem Description:
+UnitedHealth Group (UHG) has a program called Advocate4Me, which allows policyholders (or, members) to call an advocate and receive support for their healthcare needs – whether that's claims and benefits support, drug coverage, pre- and post-authorization, medical records, emergency assistance, or member portal services.
+
+Write a query to find how many UHG policyholders made three or more calls, assuming each call is identified by the `case_id` column.
+
+#### Additional Context:
+If you like this question, try out Patient Support Analysis (Part 2)!
+
+---
+
+#### `callers` Table:
+| Column Name         | Type      |
+|---------------------|-----------|
+| `policy_holder_id`  | integer   |
+| `case_id`           | varchar   |
+| `call_category`     | varchar   |
+| `call_date`         | timestamp |
+| `call_duration_secs`| integer   |
+
+#### Example Input:
+| `policy_holder_id` | `case_id`                                | `call_category`         | `call_date`              | `call_duration_secs` |
+|--------------------|------------------------------------------|-------------------------|--------------------------|-----------------------|
+| 1                  | f1d012f9-9d02-4966-a968-bf6c5bc9a9fe     | emergency assistance    | 2023-04-13T19:16:53Z     | 144                   |
+| 1                  | 41ce8fb6-1ddd-4f50-ac31-07bfcce6aaab     | authorization           | 2023-05-25T09:09:30Z     | 815                   |
+| 2                  | 9b1af84b-eedb-4c21-9730-6f099cc2cc5e     | claims assistance       | 2023-01-26T01:21:27Z     | 992                   |
+| 2                  | 8471a3d4-6fc7-4bb2-9fc7-4583e3638a9e     | emergency assistance    | 2023-03-09T10:58:54Z     | 128                   |
+| 2                  | 38208fae-bad0-49bf-99aa-7842ba2e37bc     | benefits                | 2023-06-05T07:35:43Z     | 619                   |
+
+#### Example Output:
+| `policy_holder_count` |
+|------------------------|
+| 1                      |
+
+**Explanation:**
+- The only caller who made three or more calls is policyholder ID 2.
+- The output shows the count of unique policyholders who meet this criterion.
+
+---
+
+### Thought Process:
+1. **Group Calls by Policyholder:** Group the data by `policy_holder_id` to count the number of calls (`case_id`) made by each policyholder.
+2. **Filter for 3 or More Calls:** Use the `HAVING` clause to retain only policyholders whose call count is 3 or more.
+3. **Count Unique Policyholders:** Use an outer query to count the number of such policyholders.
+4. **Output the Result:** Display the count of policyholders who made three or more calls.
+
+---
+
+### Query:
+```sql
+SELECT COUNT(policy_holder_id) AS policy_holder_count
+FROM (
+  SELECT
+    policy_holder_id,
+    COUNT(case_id) AS call_count
+  FROM callers
+  GROUP BY policy_holder_id
+  HAVING COUNT(case_id) >= 3
+) AS call_records;
